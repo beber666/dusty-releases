@@ -1,0 +1,14 @@
+[Desktop Entry]
+Type=Application
+Name=Dusty
+GenericName=CNC Milling
+GenericName[fr]=Fraisage CNC
+Comment=Design, prepare and run CNC milling jobs
+Comment[fr]=Dessiner, préparer l'usinage et piloter une fraiseuse CNC
+Exec=dusty %F
+Icon=${SNAP}/meta/gui/dusty.svg
+Terminal=false
+Categories=Graphics;Engineering;
+Keywords=CNC;router;milling;CAM;CAD;GRBL;G-code;toolpath;V-carving;SVG;DXF;fraisage;usinage;défonceuse;
+MimeType=application/vnd.websolutis.dusty+zip;
+StartupWMClass=dusty-desktop

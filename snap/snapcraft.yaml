@@ -1,0 +1,53 @@
+# Snap of Dusty, made from the published .deb packages (amd64, arm64) of this repository. The version is set by the
+# workflow (.github/workflows/snap.yml) from the release tag.
+name: dusty
+title: Dusty – CNC Milling
+version: '1.1.0'
+summary: Design, prepare the toolpaths and run your CNC
+description: |
+  Dusty prepares and runs the machining of your parts on a CNC router, from the first line to the last chip. Free, with
+  no account, no subscription and no ads.
+
+  - Design: shapes, text, node editing, booleans, offsets, arrays, fillets and dogbones
+  - Toolpaths: profile with tabs, pocket and rest machining, V-carving, chamfer, drilling, boring, facing
+  - Tool library and feeds and speeds calculator
+  - Check before you start: 2D and 3D toolpaths, simulated machined part, estimated time and pre-flight check
+  - GRBL, grblHAL and FluidNC over USB or the network; Duet, Smoothieware and Marlin; a catalog of 67 machines
+  - Built-in virtual CNC: try everything without a machine
+  - G-code in 14 flavors, with your own blocks; eight example projects and a built-in user guide
+
+  USB machines: connect the serial access once with `sudo snap connect dusty:raw-usb`, and make sure your account is a
+  member of the dialout group.
+license: Proprietary
+website: https://dusty.websolutis.com/
+contact: https://dusty.websolutis.com/support/
+icon: snap/gui/dusty.svg
+base: core22
+grade: stable
+confinement: strict
+architectures:
+  - build-on: amd64
+  - build-on: arm64
+
+apps:
+  dusty:
+    command: usr/bin/dusty-desktop
+    desktop: meta/gui/dusty.desktop
+    common-id: com.websolutis.Dusty
+    extensions: [gnome]
+    plugs:
+      - home
+      - removable-media
+      - network
+      - network-bind
+      - raw-usb
+
+parts:
+  dusty:
+    plugin: dump
+    source:
+      - on amd64: https://github.com/beber666/dusty-releases/releases/download/v1.1.0/Dusty_1.1.0_amd64.deb
+      - on arm64: https://github.com/beber666/dusty-releases/releases/download/v1.1.0/Dusty_1.1.0_arm64.deb
+    source-type: deb
+    # WebKitGTK 4.1 et Mesa viennent du contenu gnome-42-2204 (extension gnome) : n'en embarquer aucune autre copie
+    # (deux Mesa mêlés empêchent l'app de démarrer : « did not find extension DRI_Mesa »).

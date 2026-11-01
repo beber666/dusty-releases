@@ -1,0 +1,139 @@
+# Flatpak repository of Dusty, served by GitHub Pages (branch gh-pages, folder flatpak/): when a release is
+# published, the Flatpak is built for x86_64 and aarch64 from its .deb packages (flatpak/com.websolutis.Dusty.yml),
+# imported into the OSTree repository and signed with the repository key (secret APT_GPG_KEY, the key of the APT
+# repository); the single-file bundles are attached to the release.
+#
+#   flatpak install --user https://beber666.github.io/dusty-releases/flatpak/dusty.flatpakref
+name: Flatpak repository
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to add (e.g. v0.9.1)
+        required: true
+
+permissions:
+  contents: write
+
+env:
+  TAG: ${{ github.event.release.tag_name || inputs.tag }}
+  RUNTIME: '51'
+  SITE: https://beber666.github.io/dusty-releases
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        include:
+          - { arch: x86_64, deb: amd64, runner: ubuntu-24.04 }
+          - { arch: aarch64, deb: arm64, runner: ubuntu-24.04-arm }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: flatpak-builder and the GNOME runtime
+        run: |
+          sudo apt-get update -q > /dev/null
+          sudo apt-get install -y -q flatpak flatpak-builder > /dev/null
+          # Ubuntu 24.04 restricts the user namespaces that the sandbox of flatpak-builder (bubblewrap) needs.
+          sudo sysctl -q -w kernel.apparmor_restrict_unprivileged_userns=0
+          flatpak remote-add --user --if-not-exists flathub https://dl.flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y --noninteractive flathub "org.gnome.Platform//$RUNTIME" "org.gnome.Sdk//$RUNTIME"
+
+      - name: Package of the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern "*_${{ matrix.deb }}.deb" \
+            --output "flatpak/dusty_${{ matrix.deb }}.deb"
+
+      - name: Build
+        run: |
+          flatpak-builder --user --disable-rofiles-fuse --force-clean --default-branch=stable --repo=repo build \
+            flatpak/com.websolutis.Dusty.yml
+          flatpak build-bundle --runtime-repo=https://dl.flathub.org/repo/flathub.flatpakrepo repo \
+            "Dusty_${TAG#v}_${{ matrix.arch }}.flatpak" com.websolutis.Dusty stable
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flatpak-${{ matrix.arch }}
+          path: '*.flatpak'
+          if-no-files-found: error
+
+  publish:
+    needs: build
+    runs-on: ubuntu-24.04
+    # One job at a time on gh-pages (also used by the APT repository).
+    concurrency:
+      group: gh-pages
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: flatpak-*
+          merge-multiple: true
+          path: bundles
+
+      - name: Repository
+        env:
+          APT_GPG_KEY: ${{ secrets.APT_GPG_KEY }}
+        run: |
+          sudo apt-get update -q > /dev/null
+          sudo apt-get install -y -q flatpak ostree > /dev/null
+          export GNUPGHOME="$(mktemp -d)"
+          echo "$APT_GPG_KEY" | gpg --batch --import
+          KEY=$(gpg --batch --with-colons --list-secret-keys | awk -F: '$1 == "fpr" { print $10; exit }')
+          SIGN=(--gpg-sign="$KEY" --gpg-homedir="$GNUPGHOME")
+          R=flatpak/repo
+          # Git keeps no empty folder: those of the OSTree repository are made again.
+          mkdir -p "$R"
+          [ -f "$R/config" ] || ostree init --mode=archive-z2 --repo="$R"
+          mkdir -p "$R"/{objects,tmp,state,extensions,refs/heads,refs/remotes,refs/mirrors}
+          for b in bundles/*.flatpak; do
+            flatpak build-import-bundle "${SIGN[@]}" "$R" "$b"
+          done
+          # Only the 3 latest versions are kept (size of the site); no static deltas (size of the git history).
+          flatpak build-update-repo "${SIGN[@]}" --title=Dusty --default-branch=stable --prune --prune-depth=3 "$R"
+          rm -rf "$R/tmp"/*
+          GPGKEY=$(gpg --batch --export "$KEY" | base64 -w 0)
+          cat > flatpak/dusty.flatpakrepo <<EOF
+          [Flatpak Repo]
+          Title=Dusty
+          Url=$SITE/flatpak/repo/
+          Homepage=https://dusty.websolutis.com/
+          Comment=Laser engraving and cutting
+          DefaultBranch=stable
+          GPGKey=$GPGKEY
+          EOF
+          cat > flatpak/dusty.flatpakref <<EOF
+          [Flatpak Ref]
+          Name=com.websolutis.Dusty
+          Branch=stable
+          Title=Dusty
+          IsRuntime=false
+          Url=$SITE/flatpak/repo/
+          SuggestRemoteName=dusty
+          Homepage=https://dusty.websolutis.com/
+          RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo
+          GPGKey=$GPGKEY
+          EOF
+          rm -rf "$GNUPGHOME"
+
+      - name: Publication
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release upload "$TAG" bundles/*.flatpak --repo "$GITHUB_REPOSITORY" --clobber
+          touch .nojekyll
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A flatpak .nojekyll
+          git commit -q -m "Flatpak repository: $TAG" || exit 0
+          git push -q origin gh-pages

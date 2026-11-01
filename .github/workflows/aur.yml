@@ -1,0 +1,46 @@
+# AUR package dusty-bin: on each release, version and checksums of the .deb packages are set in
+# packaging/aur/PKGBUILD, which is pushed to the AUR when the secret AUR_SSH_PRIVATE_KEY exists (key of the AUR
+# account that owns dusty-bin); otherwise the PKGBUILD is only checked and kept as an artifact.
+name: AUR
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (e.g. v0.9.0)
+        required: true
+
+jobs:
+  aur:
+    runs-on: ubuntu-24.04
+    env:
+      AUR_SSH_PRIVATE_KEY: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version and checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          v="${TAG#v}"
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*.deb' --dir debs
+          amd=$(sha256sum "debs/Dusty_${v}_amd64.deb" | cut -d' ' -f1)
+          arm=$(sha256sum "debs/Dusty_${v}_arm64.deb" | cut -d' ' -f1)
+          sed -i -E "s/^pkgver=.*/pkgver=$v/; s/^pkgrel=.*/pkgrel=1/; s/^sha256sums_x86_64=.*/sha256sums_x86_64=('$amd')/; s/^sha256sums_aarch64=.*/sha256sums_aarch64=('$arm')/" packaging/aur/PKGBUILD
+          cat packaging/aur/PKGBUILD
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PKGBUILD
+          path: packaging/aur/PKGBUILD
+      - name: AUR
+        if: ${{ env.AUR_SSH_PRIVATE_KEY != '' }}
+        uses: KSXGitHub/github-actions-deploy-aur@v4.2.0
+        with:
+          pkgname: dusty-bin
+          pkgbuild: packaging/aur/PKGBUILD
+          commit_username: Websolutis
+          commit_email: beber666@users.noreply.github.com
+          ssh_private_key: ${{ secrets.AUR_SSH_PRIVATE_KEY }}
+          commit_message: "Dusty ${{ github.event.release.tag_name || inputs.tag }}"

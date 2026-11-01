@@ -1,0 +1,51 @@
+# Flatpak of Dusty for its own Flatpak repository (https://beber666.github.io/dusty-releases/flatpak/): the files of
+# the published .deb package of the architecture, as they are, in the GNOME runtime (WebKitGTK). The Flatpak workflow
+# puts the package next to this file (dusty_amd64.deb or dusty_arm64.deb).
+#
+# Sandbox: display (Wayland, X11 as a fallback), network (machines over Wi-Fi or Ethernet, Hub mode), devices (serial
+# ports of USB machines). No access to the home folder: the Open and Save dialogs go through the desktop portals, like
+# the files opened by double-click.
+id: com.websolutis.Dusty
+runtime: org.gnome.Platform
+runtime-version: '51'
+sdk: org.gnome.Sdk
+command: dusty-desktop
+finish-args:
+  - --socket=wayland
+  - --socket=fallback-x11
+  - --share=ipc
+  - --device=dri
+  - --device=all
+  - --share=network
+modules:
+  - name: dusty
+    buildsystem: simple
+    # Binaries already built (published .deb package): no debug info split, no second strip.
+    build-options:
+      no-debuginfo: true
+      strip: false
+    sources:
+      - type: file
+        path: dusty_amd64.deb
+        dest-filename: dusty.deb
+        only-arches: [x86_64]
+      - type: file
+        path: dusty_arm64.deb
+        dest-filename: dusty.deb
+        only-arches: [aarch64]
+    build-commands:
+      - ar x dusty.deb
+      - tar -xf data.tar.gz
+      - install -Dm755 usr/bin/dusty-desktop /app/bin/dusty-desktop
+      - mkdir -p /app/lib && cp -r usr/lib/Dusty /app/lib/Dusty
+      # Icons under the application ID (the "256x256@2" folder of the package holds the 256-pixel icon).
+      - install -Dm644 usr/share/icons/hicolor/32x32/apps/dusty-desktop.png /app/share/icons/hicolor/32x32/apps/com.websolutis.Dusty.png
+      - install -Dm644 usr/share/icons/hicolor/128x128/apps/dusty-desktop.png /app/share/icons/hicolor/128x128/apps/com.websolutis.Dusty.png
+      - install -Dm644 usr/share/icons/hicolor/256x256@2/apps/dusty-desktop.png /app/share/icons/hicolor/256x256/apps/com.websolutis.Dusty.png
+      - install -Dm644 usr/share/icons/hicolor/scalable/apps/dusty-desktop.svg /app/share/icons/hicolor/scalable/apps/com.websolutis.Dusty.svg
+      # Desktop file, AppStream metadata and file types under the application ID.
+      - install -Dm644 usr/share/applications/Dusty.desktop /app/share/applications/com.websolutis.Dusty.desktop
+      - sed -i 's/^Icon=.*/Icon=com.websolutis.Dusty/' /app/share/applications/com.websolutis.Dusty.desktop
+      - install -Dm644 usr/share/metainfo/com.websolutis.Dusty.metainfo.xml /app/share/metainfo/com.websolutis.Dusty.metainfo.xml
+      - sed -i 's|>Dusty.desktop</launchable>|>com.websolutis.Dusty.desktop</launchable>|' /app/share/metainfo/com.websolutis.Dusty.metainfo.xml
+      - install -Dm644 usr/share/mime/packages/dusty.xml /app/share/mime/packages/com.websolutis.Dusty.xml

@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" role="img" aria-labelledby="title desc">
+  <title id="title">Dusty — icône d'application</title>
+  <desc id="desc">Monogramme D ouvert avec fraise CNC indépendante et un tracé d'usinage. Recréation vectorielle de la proposition 03.</desc>
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#FEFDFB"/>
+      <stop offset="0.62" stop-color="#F9F6F0"/>
+      <stop offset="1" stop-color="#F2EEE7"/>
+    </linearGradient>
+    <linearGradient id="graphite" x1="0" y1="0" x2="1" y2="1" gradientUnits="objectBoundingBox">
+      <stop offset="0" stop-color="#30363A"/>
+      <stop offset="1" stop-color="#191D21"/>
+    </linearGradient>
+  </defs>
+  <rect id="app-tile" x="24" y="24" width="976" height="976" rx="216" fill="url(#paper)"/>
+  <g id="dusty-symbol" fill="url(#graphite)">
+    <path id="letter-D" d="M 466 200
+       H 566
+       C 742 200 863 331 863 524
+       C 863 710 761 855 565 855
+       H 291
+       C 253 855 241 833 258 795
+       C 273 758 303 719 330 699
+       C 338 693 349 692 367 692
+       H 555
+       C 642 692 704 628 704 539
+       C 704 444 653 360 552 360
+       H 477
+       Q 466 360 466 349
+       Z"/>
+    <g id="cnc-bit" aria-label="Fraise CNC indépendante">
+      <rect id="spindle" x="203" y="200" width="171" height="164" rx="12"/>
+      <rect id="collet" x="236" y="381" width="105" height="75" rx="7"/>
+      <path id="flute-upper" d="M 260 473 H 316 V 492 L 250 574 V 519 Q 250 496 260 473 Z"/>
+      <path id="flute-lower" d="M 318 509 V 583
+                 C 318 595 308 610 297 623
+                 L 268 655 L 252 629
+                 C 248 620 248 605 250 591 Z"/>
+    </g>
+    <path id="toolpath" d="M 312 650
+           C 308 678 287 705 250 744
+           C 215 781 183 809 197 834
+           C 201 843 209 849 219 852
+           C 192 853 175 842 172 824
+           C 164 793 182 766 218 729
+           C 253 695 295 660 312 650 Z"/>
+  </g>
+</svg>

@@ -1,0 +1,84 @@
+# APT repository of Dusty, served by GitHub Pages (branch gh-pages): when a release is published, its .deb packages
+# (amd64, arm64) are added to the pool, the indexes are rebuilt and signed with the repository key (secret
+# APT_GPG_KEY, an armored private key; public key: dusty.gpg at the root of the site).
+#
+#   curl -fsSL https://beber666.github.io/dusty-releases/dusty.gpg | sudo tee /usr/share/keyrings/dusty.gpg > /dev/null
+#   echo "deb [signed-by=/usr/share/keyrings/dusty.gpg] https://beber666.github.io/dusty-releases stable main" \
+#     | sudo tee /etc/apt/sources.list.d/dusty.list
+#   sudo apt update && sudo apt install dusty
+name: APT repository
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to add (e.g. v0.9.0)
+        required: true
+
+permissions:
+  contents: write
+
+# One job at a time on gh-pages (also used by the Flatpak repository).
+concurrency:
+  group: gh-pages
+  cancel-in-progress: false
+
+jobs:
+  apt:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Packages of the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          mkdir -p pool/main/d/dusty
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" --pattern '*.deb' --dir pool/main/d/dusty --clobber
+          # Only the 3 latest versions are kept (size of the site).
+          ls pool/main/d/dusty/*.deb | sed -E 's/.*_([0-9][^_]*)_[a-z0-9]+\.deb/\1/' | sort -uV | head -n -3 \
+            | while read -r v; do rm -f pool/main/d/dusty/*_"$v"_*.deb; done
+
+      - name: Indexes
+        run: |
+          sudo apt-get install -y -q apt-utils > /dev/null
+          for arch in amd64 arm64; do
+            mkdir -p "dists/stable/main/binary-$arch"
+            apt-ftparchive --arch "$arch" packages pool > "dists/stable/main/binary-$arch/Packages"
+            gzip -9kf "dists/stable/main/binary-$arch/Packages"
+          done
+          apt-ftparchive \
+            -o APT::FTPArchive::Release::Origin=Websolutis \
+            -o APT::FTPArchive::Release::Label=Dusty \
+            -o APT::FTPArchive::Release::Suite=stable \
+            -o APT::FTPArchive::Release::Codename=stable \
+            -o APT::FTPArchive::Release::Architectures="amd64 arm64" \
+            -o APT::FTPArchive::Release::Components=main \
+            -o APT::FTPArchive::Release::Description="Dusty, CNC milling" \
+            release dists/stable > dists/stable/Release
+
+      - name: Signature
+        env:
+          APT_GPG_KEY: ${{ secrets.APT_GPG_KEY }}
+        run: |
+          export GNUPGHOME="$(mktemp -d)"
+          echo "$APT_GPG_KEY" | gpg --batch --import
+          gpg --batch --yes --clearsign -o dists/stable/InRelease dists/stable/Release
+          gpg --batch --yes -abs -o dists/stable/Release.gpg dists/stable/Release
+          gpg --batch --yes --export -o dusty.gpg
+          rm -rf "$GNUPGHOME"
+
+      - name: Publication
+        run: |
+          touch .nojekyll
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "APT repository: ${{ github.event.release.tag_name || inputs.tag }}" || exit 0
+          git push -q origin gh-pages

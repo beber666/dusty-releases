@@ -1,0 +1,43 @@
+# Snap of Dusty: built for amd64 and arm64 from the .deb packages of a release; uploaded to the Snap Store (edge
+# channel) when the secret SNAPCRAFT_STORE_CREDENTIALS exists (snapcraft export-login), otherwise kept as an artifact.
+name: Snap
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag (e.g. v0.9.0)
+        required: true
+
+jobs:
+  snap:
+    strategy:
+      fail-fast: false
+      matrix:
+        runner: [ubuntu-24.04, ubuntu-24.04-arm]
+    runs-on: ${{ matrix.runner }}
+    env:
+      SNAPCRAFT_STORE_CREDENTIALS: ${{ secrets.SNAPCRAFT_STORE_CREDENTIALS }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Version
+        env:
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: |
+          v="${TAG#v}"
+          sed -i -E "s/^version: '.*'/version: '$v'/; s#/download/v[^/]+/Dusty_[^_]+_#/download/v$v/Dusty_${v}_#" snap/snapcraft.yaml
+          grep -E "^version|download" snap/snapcraft.yaml
+      - uses: snapcore/action-build@v1
+        id: build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: snap-${{ matrix.runner }}
+          path: ${{ steps.build.outputs.snap }}
+      - name: Store (edge)
+        if: ${{ env.SNAPCRAFT_STORE_CREDENTIALS != '' }}
+        uses: snapcore/action-publish@v1
+        with:
+          snap: ${{ steps.build.outputs.snap }}
+          release: edge

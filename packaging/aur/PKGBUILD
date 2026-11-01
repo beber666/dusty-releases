@@ -1,0 +1,25 @@
+# Maintainer: Websolutis <https://dusty.websolutis.com/support/>
+# Paquet AUR de Dusty, fait des .deb publiés sur https://github.com/beber666/dusty-releases (mis à jour par le
+# workflow .github/workflows/aur.yml à chaque version).
+pkgname=dusty-bin
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="Design, prepare and run CNC milling jobs (GRBL, grblHAL, FluidNC, Duet, Marlin, Smoothieware)"
+arch=('x86_64' 'aarch64')
+url="https://dusty.websolutis.com/"
+license=('LicenseRef-Dusty')
+depends=('webkit2gtk-4.1' 'gtk3' 'hicolor-icon-theme')
+provides=('dusty')
+conflicts=('dusty')
+options=('!strip' '!debug')
+source_x86_64=("https://github.com/beber666/dusty-releases/releases/download/v${pkgver}/Dusty_${pkgver}_amd64.deb")
+source_aarch64=("https://github.com/beber666/dusty-releases/releases/download/v${pkgver}/Dusty_${pkgver}_arm64.deb")
+sha256sums_x86_64=('SKIP')
+sha256sums_aarch64=('SKIP')
+
+package() {
+  bsdtar -xf data.tar.gz -C "$pkgdir"
+  install -Dm644 /dev/stdin "$pkgdir/usr/share/licenses/$pkgname/LICENSE" <<'LICENCE'
+Dusty © 2026 Websolutis. Free to download and use; redistribution of the unchanged packages is allowed.
+LICENCE
+}
