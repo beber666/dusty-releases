@@ -1,0 +1,10 @@
+[Flatpak Ref]
+Name=com.websolutis.Dusty
+Branch=stable
+Title=Dusty
+IsRuntime=false
+Url=https://beber666.github.io/dusty-releases/flatpak/repo/
+SuggestRemoteName=dusty
+Homepage=https://dusty.websolutis.com/
+RuntimeRepo=https://dl.flathub.org/repo/flathub.flatpakrepo
+GPGKey=mDMEatSHsBYJKwYBBAHaRw8BAQdAo1SbtbUQJ6IIvF6KSdVzQ5AGg8PuOGjV6OkoPQXpAre0IkJlcm5pZSBBUFQgcmVwb3NpdG9yeSAoV2Vic29sdXRpcymIkAQTFgoAOBYhBGTfovigdARYL+uGEQ8VWb4NDV5MBQJq1IewAhsDBQsJCAcCBhUKCQgLAgQWAgMBAh4BAheAAAoJEA8VWb4NDV5M55wA/jpwQvl+vIfGa/f6iLTv2HEwZXLGgHyVcmu8CqqQQr6GAQDl+244TU0yeRordpf2v8lCBbsBLzRql4Ow+Ir/DyTzBw==
