@@ -1,0 +1,17 @@
+Package: dusty
+Architecture: amd64
+Version: 1.1.0
+Priority: optional
+Section: graphics
+Maintainer: websolutis
+Installed-Size: 25779
+Depends: libwebkit2gtk-4.1-0, libgtk-3-0
+Filename: pool/main/d/dusty/Dusty_1.1.0_amd64.deb
+Size: 11760178
+MD5sum: 64ad51ab37b6e32919f816fbae635e48
+SHA1: 4782a40e0dc1b4e7d6d935d7df56a9e0896f3827
+SHA256: 00a048819ac42b5983c6c1cac478d99b2517deb3fd96fe1624a39e6fa8369d42
+SHA512: e8b8022b020bf9e2daba5063b77acc3c9d168fd1e58125b71ad04583850d7af421ef93626d377f3bbeda39c5234cafb01feff3e2e2b842456d3882a546cff28b
+Description: Design, prepare and run CNC milling jobs
+ Dusty prepares and runs the machining of your parts on a CNC router: design, toolpaths, a 3D preview of the machined part, G-code, and control of GRBL, grblHAL, FluidNC, Duet, Marlin and Smoothieware machines over USB or the network. Free, with no account, no subscription and no ads.
+

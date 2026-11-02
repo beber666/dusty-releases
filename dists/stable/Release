@@ -1,0 +1,32 @@
+Architectures: amd64 arm64
+Codename: stable
+Components: main
+Date: Mon, 02 Nov 2026 09:48:16 +0000
+Description: Dusty, CNC milling
+Label: Dusty
+Origin: Websolutis
+Suite: stable
+MD5Sum:
+ 220b24b4fd7600d5ddef62af527db391              177 Release
+ d239a153b5019cace821297d1a2cf759              877 main/binary-amd64/Packages
+ 9a92c23fc3ae8e4fa47f8687f56a22c4              610 main/binary-amd64/Packages.gz
+ 2446f3d05009db7fa92b5803ac5ca16a              877 main/binary-arm64/Packages
+ 9543386cadfc75a5d6b5bb7f9c844ddf              611 main/binary-arm64/Packages.gz
+SHA1:
+ 812d0c3b1a9ae00d4b723af673e398965c4d397e              177 Release
+ 55728f8878d9a4bcfd0fbf4fb7a4c04bf385f7f0              877 main/binary-amd64/Packages
+ d50f95dab667703da9db54f51b53d272945075d1              610 main/binary-amd64/Packages.gz
+ 67e43b2975827c4199cae35f65cf328095083349              877 main/binary-arm64/Packages
+ f1a9821918865ec8b44623a36391c09ab6fd1246              611 main/binary-arm64/Packages.gz
+SHA256:
+ 2d9feb7748e07846df1f35499d6a58796f9c4e84e6cb36fd6459d8e16648efc5              177 Release
+ fb51705eb49d049af065d92b69c4cc14dd74ad463f68940a0a386f190077d68e              877 main/binary-amd64/Packages
+ efb864fb321eff0bffbdcf103075fe02b9c51f69d063ff97e197241705801d12              610 main/binary-amd64/Packages.gz
+ 91bf54f80b04d73dc7aae6f9f2cf46c7644ac89e5f468bad99e6569a29961e82              877 main/binary-arm64/Packages
+ cf5160ca521dc788546c90c37c6798df843a8cdeb47293699db2b18ba6465922              611 main/binary-arm64/Packages.gz
+SHA512:
+ a794c540ec1158b243664d07718f2a35945ab8920b6b833d2d4b1dec357a6aaba2f95d53377e1adbb8e9119e1b130cdf5ee49b2a0421362cc23a674825c397b6              177 Release
+ 430b96c1180592c2d953df5b261d2a376445132415bb648e337a334bf3207f50332f365a2227d160b8ae6e9704b52365520e2f5cc21e0bec22436b28539b10c5              877 main/binary-amd64/Packages
+ 7cfff9b20ff0cd437c1ad628ccfacadea66d2a7425df654bad20954eb31b95b3299f8061d1055d4d9de94708c3cbd0debf30c69d91aa0adc390273eb5eea63af              610 main/binary-amd64/Packages.gz
+ f33c13df57aef7297dfa4ab8a63e860349f406980ed47cf5e323e4947329054cd0b7b1b1ae6bf19feb48f85fd373649d48a4922a9922ccc4f4305fab5677e523              877 main/binary-arm64/Packages
+ 1959e91f15a53903fd7ff8782721a441239a823730897dc08e601e0290358dd02db350e581781572943e2263d8b6df1c939b1372b92c0bd0a2a2aa97a18820ba              611 main/binary-arm64/Packages.gz
